@@ -1,0 +1,1578 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hygienemist | Smart Sanitizer Dispenser</title>
+    <style>
+      :root {
+        --bg: #f3f6f8;
+        --navy: #102536;
+        --teal: #14a99a;
+        --tl: #e6f7f4;
+        --blue: #578fe0;
+        --gold: #dba342;
+        --purple: #8b78c8;
+        --rose: #d06a6c;
+        --text: #193243;
+        --muted: #82939e;
+        --border: #e5ecef;
+        --shadow: 0 8px 25px rgba(24, 49, 65, 0.05);
+        --zoom: 1.2;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: Inter, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .app {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 270px 1fr;
+      }
+      .sidebar {
+        background: var(--navy);
+        color: #fff;
+        padding: 28px 18px;
+        display: flex;
+        flex-direction: column;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 34px;
+      }
+      .brand-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 13px;
+        background: linear-gradient(135deg, #37d1bd, #118e86);
+        display: grid;
+        place-items: center;
+        font-size: 22px;
+      }
+      .brand h2 {
+        font-size: 18px;
+      }
+      .brand p {
+        font-size: 10px;
+        color: #9db2bf;
+        letter-spacing: 1.5px;
+      }
+      .side-label {
+        font-size: 10px;
+        letter-spacing: 1.5px;
+        color: #7f98a8;
+        margin: 0 8px 10px;
+      }
+      .side-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .nav-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        border: 0;
+        background: none;
+        color: #a8bbc6;
+        font:
+          700 13px Inter,
+          Arial,
+          sans-serif;
+        padding: 12px;
+        border-radius: 11px;
+        cursor: pointer;
+        text-align: left;
+        transition: 0.2s;
+      }
+      .nav-btn[hidden] {
+        display: none;
+      }
+      .nav-btn:hover {
+        background: #183547;
+        color: #fff;
+      }
+      .nav-btn.on {
+        background: #1b3e52;
+        color: #fff;
+      }
+      .nav-btn:focus-visible,
+      .tab:focus-visible,
+      .btn:focus-visible {
+        outline: 2px solid var(--teal);
+        outline-offset: 2px;
+      }
+      .side-status {
+        margin-top: auto;
+        padding: 16px;
+        border-radius: 13px;
+        background: #183547;
+        font-size: 12px;
+        color: #a8bbc6;
+        line-height: 1.7;
+      }
+      .side-status strong {
+        display: block;
+        color: #fff;
+        margin-bottom: 6px;
+      }
+      main {
+        padding: 32px;
+        min-width: 0;
+        zoom: var(--zoom);
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 22px;
+        gap: 15px;
+      }
+      .header h1 {
+        font-size: 27px;
+        letter-spacing: -0.7px;
+      }
+      .header p {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+      .date {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 11px 15px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .tabs {
+        display: flex;
+        gap: 4px;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 5px;
+        margin-bottom: 15px;
+        box-shadow: var(--shadow);
+      }
+      .tab {
+        flex: 1;
+        border: 0;
+        background: none;
+        padding: 13px 10px;
+        border-radius: 10px;
+        font:
+          800 11px Inter,
+          Arial,
+          sans-serif;
+        color: var(--muted);
+        cursor: pointer;
+        transition: 0.25s;
+      }
+      .tab:hover {
+        background: #eef3f4;
+        color: var(--teal);
+      }
+      .tab.on {
+        background: var(--tl);
+        color: var(--teal);
+      }
+      .banner {
+        padding: 13px 16px;
+        margin-bottom: 8px;
+        border-radius: 11px;
+        font-size: 11px;
+        background: var(--tl);
+        color: #198879;
+      }
+      .banner.maint {
+        background: #fff4e3;
+        color: #a47528;
+      }
+      .banner.sleep {
+        background: #eef0fb;
+        color: #6674ad;
+      }
+
+      /* Each sidebar item shows one section at a time */
+      .panel,
+      .panel .main-grid,
+      .panel .right-column,
+      .panel .two {
+        display: contents;
+      }
+      .panel > .sh {
+        display: none;
+      }
+      .view {
+        display: none;
+        margin-top: 22px;
+      }
+      .view.on {
+        display: block;
+        animation: fade 0.3s ease;
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .section {
+        margin-top: 25px;
+      }
+      .sh {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 13px;
+      }
+      .sh h2 {
+        font-size: 15px;
+      }
+      .sh p {
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .tag {
+        background: var(--tl);
+        color: var(--teal);
+        font-size: 9px;
+        font-weight: 800;
+        padding: 6px 10px;
+        border-radius: 20px;
+        white-space: nowrap;
+      }
+      .tag.warn {
+        background: #fff3df;
+        color: #b47b29;
+      }
+      .tag.paused {
+        background: #eef0fb;
+        color: #6674ad;
+      }
+      .grid {
+        display: grid;
+        gap: 14px;
+      }
+      .kpis {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .card,
+      .subcard {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+      .kpi-slot.stale .card {
+        opacity: 0.55;
+      }
+      .kpi-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        margin-bottom: 14px;
+      }
+      .kpi-label {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .kpi-value {
+        font-size: 28px;
+        font-weight: 800;
+        margin: 9px 0 4px;
+      }
+      .kpi-value.bad {
+        color: #c05e60;
+      }
+      .kpi-description {
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .teal {
+        background: #e6f7f4;
+        color: #159d91;
+      }
+      .blue {
+        background: #edf4ff;
+        color: var(--blue);
+      }
+      .gold {
+        background: #fff5e6;
+        color: var(--gold);
+      }
+      .purple {
+        background: #f1edff;
+        color: var(--purple);
+      }
+      .rose {
+        background: #fdeeee;
+        color: var(--rose);
+      }
+      .main-grid {
+        grid-template-columns: 1.3fr 1fr;
+      }
+      .right-column {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+      }
+      .tank-area {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 35px;
+        padding: 22px 5px 8px;
+      }
+      .tank {
+        position: relative;
+        height: 190px;
+        width: 110px;
+        border: 4px solid #b9ccd1;
+        border-top: 0;
+        border-radius: 8px 8px 17px 17px;
+        overflow: hidden;
+        background: #f7fbfc;
+      }
+      .liquid {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 69%;
+        background: linear-gradient(180deg, #70ded3, #16a99a);
+        transition: height 0.8s ease;
+      }
+      .tank-percent {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: #fff;
+        font-size: 22px;
+        font-weight: 800;
+        text-shadow: 0 1px 5px #16786f;
+      }
+      .capacity-details {
+        flex: 1;
+      }
+      .capacity-big {
+        font-size: 38px;
+        font-weight: 800;
+      }
+      .capacity-details p {
+        font-size: 11px;
+        color: var(--muted);
+        margin: 5px 0 20px;
+      }
+      .progress {
+        height: 8px;
+        background: #edf1f3;
+        border-radius: 20px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #24c6b7, #118d83);
+        border-radius: 20px;
+        transition: width 0.8s;
+      }
+      .progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        margin-bottom: 8px;
+      }
+      .rec {
+        display: flex;
+        gap: 12px;
+        margin-top: 10px;
+        padding: 14px;
+        border-radius: 12px;
+        background: #eaf8f4;
+        color: #168b7d;
+      }
+      .rec.warn {
+        background: #fff4e3;
+        color: #a47528;
+      }
+      .rec.crit {
+        background: #fdecec;
+        color: #c05e60;
+      }
+      .rec b {
+        font-size: 12px;
+        display: block;
+      }
+      .rec p {
+        font-size: 10px;
+        margin-top: 5px;
+        line-height: 1.6;
+        opacity: 0.85;
+      }
+      .pump-status {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        margin: 15px 0;
+      }
+      .pump-icon {
+        background: #eaf5f5;
+        color: #149d91;
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 21px;
+      }
+      .pump-status strong {
+        display: block;
+        font-size: 12px;
+      }
+      .pump-status p {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .pump-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .pump-details div {
+        padding: 10px;
+        background: #f6f8f9;
+        border-radius: 9px;
+      }
+      .pump-details small {
+        display: block;
+        color: var(--muted);
+        font-size: 9px;
+      }
+      .pump-details strong {
+        font-size: 12px;
+      }
+      .table-card {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 820px;
+        text-align: left;
+      }
+      th {
+        background: #f7f9fa;
+        color: #83949e;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        padding: 13px;
+      }
+      td {
+        font-size: 10px;
+        padding: 13px;
+        border-bottom: 1px solid #edf1f3;
+        color: #586e7b;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      .note {
+        font-size: 10px;
+        color: #8999a4;
+        margin-top: 9px;
+        line-height: 1.6;
+      }
+      .two {
+        grid-template-columns: 1fr 1fr;
+      }
+      .subcard h3 {
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      .subcard > p {
+        color: var(--muted);
+        font-size: 10px;
+        margin-bottom: 14px;
+        line-height: 1.6;
+      }
+      .sensor-check {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid var(--border);
+        padding: 12px 0;
+        gap: 8px;
+        font-size: 10px;
+      }
+      .sensor-check strong {
+        flex: 1;
+      }
+      .sensor-check span {
+        color: var(--teal);
+        font-weight: 800;
+        min-width: 90px;
+        text-align: right;
+      }
+      .sensor-check small {
+        display: block;
+        color: var(--muted);
+        font-weight: 400;
+        margin-top: 3px;
+      }
+      .btn {
+        border: 1px solid #dce8eb;
+        background: #f8fafb;
+        border-radius: 9px;
+        padding: 9px 14px;
+        font:
+          700 10px Inter,
+          Arial,
+          sans-serif;
+        cursor: pointer;
+        color: #557080;
+        transition: 0.2s;
+      }
+      .btn:hover:not(:disabled) {
+        border-color: var(--teal);
+        color: var(--teal);
+      }
+      .btn.main {
+        background: var(--teal);
+        border-color: var(--teal);
+        color: #fff;
+      }
+      .btn.main:hover:not(:disabled) {
+        background: #0c8f85;
+        color: #fff;
+      }
+      .btn.sleep {
+        background: #6879b8;
+        border-color: #6879b8;
+        color: #fff;
+      }
+      .btn.sleep:hover:not(:disabled) {
+        background: #566aa8;
+        color: #fff;
+      }
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .btn-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 15px;
+      }
+      .switch-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 11px;
+        cursor: pointer;
+        margin: 6px 0 4px;
+      }
+      .switch-row input {
+        accent-color: var(--teal);
+        width: 18px;
+        height: 18px;
+      }
+      .cmdlog {
+        margin-top: 14px;
+        border-top: 1px solid var(--border);
+        padding-top: 10px;
+        font-size: 10px;
+        color: #586e7b;
+        line-height: 1.9;
+        font-family: ui-monospace, Menlo, monospace;
+      }
+      .sleep-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .sleep-icon {
+        background: #e5e9fa;
+        color: #6879b8;
+        width: 49px;
+        height: 49px;
+        display: grid;
+        place-items: center;
+        border-radius: 15px;
+        font-size: 22px;
+      }
+      .sleep-info strong {
+        display: block;
+        font-size: 14px;
+      }
+      .sleep-info p {
+        color: #8993ad;
+        font-size: 10px;
+        margin-top: 5px;
+        line-height: 1.6;
+      }
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 13px;
+        margin-top: 20px;
+      }
+      .stat {
+        background: #f6f8fb;
+        padding: 15px;
+        border-radius: 11px;
+      }
+      .stat small {
+        display: block;
+        font-size: 9px;
+        color: var(--muted);
+      }
+      .stat strong {
+        display: block;
+        font-size: 12px;
+        margin-top: 5px;
+      }
+      footer {
+        margin-top: 35px;
+        padding: 15px 0;
+        border-top: 1px solid var(--border);
+        color: #9aa8b1;
+        font-size: 9px;
+        display: flex;
+        justify-content: space-between;
+      }
+      @media (max-width: 1300px) {
+        :root {
+          --zoom: 1.1;
+        }
+      }
+      @media (max-width: 1100px) {
+        .app {
+          grid-template-columns: 230px 1fr;
+        }
+        main {
+          padding: 23px;
+        }
+        .kpis {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 800px) {
+        :root {
+          --zoom: 1;
+        }
+        .app {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          position: static;
+          height: auto;
+          padding: 17px;
+        }
+        .brand {
+          margin: 0 0 14px;
+        }
+        .side-label,
+        .side-status {
+          display: none;
+        }
+        .side-nav {
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+        .nav-btn {
+          width: auto;
+          flex: 1;
+          justify-content: center;
+          padding: 10px;
+          font-size: 12px;
+        }
+        main {
+          padding: 19px;
+        }
+        .main-grid,
+        .two {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 520px) {
+        .header h1 {
+          font-size: 22px;
+        }
+        .date {
+          display: none;
+        }
+        .kpis {
+          gap: 9px;
+        }
+        .card {
+          padding: 14px;
+        }
+        .kpi-value {
+          font-size: 23px;
+        }
+        .tank-area {
+          gap: 18px;
+        }
+        .tank {
+          height: 165px;
+          width: 95px;
+        }
+        .capacity-big {
+          font-size: 30px;
+        }
+        .stat-grid {
+          grid-template-columns: 1fr;
+        }
+        footer {
+          flex-direction: column;
+          gap: 5px;
+        }
+        .tab {
+          font-size: 10px;
+          padding: 12px 4px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-icon">💧</div>
+          <div>
+            <h2>Hygienemist</h2>
+            <p>SMART DISPENSER</p>
+          </div>
+        </div>
+        <div class="side-label">SECTIONS</div>
+        <nav
+          class="side-nav"
+          id="sideNav"
+          aria-label="Modes and sections"></nav>
+        <div class="side-status">
+          <strong id="sideMode">● AUTO</strong><span id="sideState">Awake</span
+          ><br />Control Interface
+        </div>
+      </aside>
+
+      <main>
+        <header class="header">
+          <div>
+            <h1>Sanitizer Control Center</h1>
+            <p>Monitor sanitizer capacity and manage dispenser operation.</p>
+          </div>
+          <div class="date">DISPENSER SYSTEM · V2.2</div>
+        </header>
+
+        <nav class="tabs" role="tablist">
+          <button class="tab on" role="tab" data-tab="auto">AUTO</button>
+          <button class="tab" role="tab" data-tab="maintenance">
+            MAINTENANCE
+          </button>
+          <button class="tab" role="tab" data-tab="sleep">SLEEP</button>
+        </nav>
+
+        <div class="banner" id="banner"></div>
+
+        <!-- ===== AUTO ===== -->
+        <section class="panel" id="tab-auto">
+          <div id="sec-dash">
+            <div class="sh">
+              <div>
+                <h2>Live Dashboard</h2>
+                <p>
+                  Current sensor readings and output device status, updated
+                  automatically
+                </p>
+              </div>
+              <span class="tag live-tag">LIVE</span>
+            </div>
+            <div class="grid kpis kpi-slot"></div>
+          </div>
+
+          <div class="section grid main-grid">
+            <div class="card" id="sec-tank">
+              <div class="sh">
+                <div>
+                  <h2>Sanitizer Tank Capacity</h2>
+                  <p>Estimated remaining sanitizer volume</p>
+                </div>
+                <span class="tag" id="tankTag">NORMAL</span>
+              </div>
+              <div class="tank-area">
+                <div class="tank">
+                  <div class="liquid" id="liquid"></div>
+                  <div class="tank-percent" id="tankPct">69%</div>
+                </div>
+                <div class="capacity-details">
+                  <div class="capacity-big" id="tankMl">690 mL</div>
+                  <p>Remaining sanitizer volume</p>
+                  <div class="progress-label">
+                    <span>Tank fill level</span
+                    ><strong id="tankPct2">69%</strong>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-fill" id="fill"></div>
+                  </div>
+                  <p style="margin-top: 16px">Total tank capacity: 1,000 mL</p>
+                </div>
+              </div>
+            </div>
+            <div class="right-column">
+              <div class="card" id="sec-recs">
+                <div class="sh">
+                  <h2>Recommendations</h2>
+                  <span class="tag">ALERTS</span>
+                </div>
+                <div id="recs"></div>
+              </div>
+              <div class="card" id="sec-pump">
+                <div class="sh">
+                  <h2>Peristaltic Pump</h2>
+                  <span class="tag" id="pumpTag">STANDBY</span>
+                </div>
+                <div class="pump-status">
+                  <div class="pump-icon">⚙</div>
+                  <div>
+                    <strong id="pumpTitle">Ready for Dispensing</strong>
+                    <p id="pumpSub">Waiting for dispense command</p>
+                  </div>
+                </div>
+                <div class="pump-details">
+                  <div>
+                    <small>Driver State</small
+                    ><strong id="pumpDriver">Enabled</strong>
+                  </div>
+                  <div>
+                    <small>Motor Speed</small
+                    ><strong id="pumpSpeed">65%</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section" id="sec-logs">
+            <div class="sh">
+              <div>
+                <h2>Sensor Data Logs</h2>
+                <p id="logInfo"></p>
+              </div>
+              <span class="tag">DATA RECORDS</span>
+            </div>
+            <div class="card table-card"><table class="log-table"></table></div>
+            <p class="note">
+              Readings are saved at the set log interval. Demo data is simulated
+              until the dashboard is connected to your database.
+            </p>
+          </div>
+        </section>
+
+        <!-- ===== MAINTENANCE ===== -->
+        <section class="panel" id="tab-maintenance">
+          <div class="sh">
+            <div>
+              <h2>Maintenance Control Panel</h2>
+              <p>
+                Check and test each input and output device. Automatic operation
+                is paused while this tab is open.
+              </p>
+            </div>
+            <span class="tag warn">MANUAL CONTROL</span>
+          </div>
+          <div class="grid two">
+            <div class="subcard" id="sec-sensor">
+              <h3>Sensor Check</h3>
+              <p>
+                Request the current reading of each sensor to confirm it is
+                working.
+              </p>
+              <div id="sensorList"></div>
+              <div class="btn-row">
+                <button class="btn main" id="readAll">Read all sensors</button>
+              </div>
+            </div>
+            <div class="subcard" id="sec-act">
+              <h3>Actuator Control</h3>
+              <p>
+                Send commands to the peristaltic pump to test that it responds
+                correctly.
+              </p>
+              <label class="switch-row"
+                ><input type="checkbox" id="pumpOn" checked /> Enable pump
+                driver</label
+              >
+              <div class="btn-row">
+                <button class="btn main" id="pulse"></button>
+              </div>
+              <div class="cmdlog" id="cmdlog">No commands sent yet.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== SLEEP ===== -->
+        <section class="panel" id="tab-sleep">
+          <div class="card" id="sec-sleepctl">
+            <div class="sh">
+              <div class="sleep-info">
+                <div class="sleep-icon">☾</div>
+                <div>
+                  <strong>Microcontroller Sleep Mode</strong>
+                  <p>
+                    The controller enters SLEEP_MODE_PWR_DOWN and wakes through
+                    a hardware interrupt. No live data arrives while it sleeps.
+                  </p>
+                </div>
+              </div>
+              <span class="tag" id="sleepTag">AWAKE</span>
+            </div>
+            <div class="stat-grid">
+              <div class="stat">
+                <small>Device Status</small><strong id="stStatus">Awake</strong>
+              </div>
+              <div class="stat">
+                <small>Last Changed</small><strong id="stChanged">—</strong>
+              </div>
+              <div class="stat">
+                <small>Current Sleep Duration</small
+                ><strong id="stDur">Not sleeping</strong>
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn sleep" id="sleepBtn">☾ Sleep command</button>
+              <button class="btn main" id="wakeBtn">⏻ Wake command</button>
+            </div>
+            <p class="note">
+              The wake command returns the device to AUTO. Commands reach the
+              hardware only after the dashboard is connected to your controller
+              or gateway.
+            </p>
+          </div>
+
+          <div class="section" id="sec-snap">
+            <div class="sh">
+              <div>
+                <h2>Dashboard Snapshot</h2>
+                <p>
+                  Same readings as AUTO. Values stay at the last reading while
+                  the device sleeps.
+                </p>
+              </div>
+              <span class="tag live-tag">LIVE</span>
+            </div>
+            <div class="grid kpis kpi-slot"></div>
+          </div>
+
+          <div class="section" id="sec-sleeplog">
+            <div class="sh">
+              <div>
+                <h2>Sleep Log</h2>
+                <p>Sleep start, wake time and total duration</p>
+              </div>
+              <span class="tag">POWER MANAGEMENT</span>
+            </div>
+            <div class="card table-card">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Sleep Start</th>
+                    <th>Wake Time</th>
+                    <th>Total Duration</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="sleepLog"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <footer>
+          <span>HYGIENEMIST SMART SANITIZER DISPENSER</span
+          ><span>CONTROL INTERFACE · V2.2</span>
+        </footer>
+      </main>
+    </div>
+
+    <script>
+      /* =====================================================================
+   1. CONFIG: change settings and add or edit sensors here
+   ===================================================================== */
+      const DEMO = true;
+      const LOG_MS = DEMO ? 10000 : 5 * 60000; // how often a log row is saved
+      const LOW = 40; // % : "running low" warning
+      const CRITICAL = 20; // % : "refill now" warning
+      const FLOAT_TRIP = 20; // % : level where the float switch drops
+      const PUMP_SPEED = 65; // % : motor speed
+      const PULSE_MS = 1000; // ms : fixed test pulse length
+
+      /* Each sensor is defined once. The dashboard cards, the Sensor Check list
+   and the log table are all built from this list.
+   pct(value) converts a reading to a 0-100 level; leave it out for sensors
+   (like the float switch) that are not part of the combined average.     */
+      const SENSORS = [
+        {
+          key: "w",
+          name: "Load Cell (HX711)",
+          short: "Load Cell",
+          label: "LOAD CELL WEIGHT",
+          desc: "Sanitizer mass · HX711",
+          icon: "⚖",
+          color: "teal",
+          fmt: (v) => v + " g",
+          pct: (v) => v / 10,
+        },
+        {
+          key: "d",
+          name: "Time-of-Flight",
+          short: "ToF",
+          label: "TOF DISTANCE",
+          desc: "Liquid surface distance",
+          icon: "⌁",
+          color: "blue",
+          fmt: (v) => v + " mm",
+          pct: (v) => 100 - v / 1.35,
+        },
+        {
+          key: "c1",
+          name: "Capacitive Sensor 1 (Water Contact)",
+          short: "Capacitive 1",
+          label: "CAPACITIVE 1 LEVEL",
+          desc: "Water contact · upper probe",
+          icon: "▥",
+          color: "gold",
+          fmt: (v) => v + "%",
+          pct: (v) => v,
+        },
+        {
+          key: "c2",
+          name: "Capacitive Sensor 2 (Water Contact)",
+          short: "Capacitive 2",
+          label: "CAPACITIVE 2 LEVEL",
+          desc: "Water contact · lower probe",
+          icon: "▤",
+          color: "gold",
+          fmt: (v) => v + "%",
+          pct: (v) => v,
+        },
+        {
+          key: "f",
+          name: "Float Switch",
+          short: "Float",
+          label: "FLOAT SWITCH",
+          desc: "Low-level safety switch",
+          icon: "◍",
+          color: "rose",
+          fmt: (v) => (v ? "Liquid OK" : "LOW"),
+          bad: (v) => !v,
+        },
+      ];
+      const LEVEL_SENSORS = SENSORS.filter((s) => s.pct);
+
+      /* Sidebar structure: each mode (tab) and its sections */
+      const NAV = [
+        {
+          tab: "auto",
+          subs: [
+            ["sec-dash", "Live Dashboard"],
+            ["sec-tank", "Tank Capacity"],
+            ["sec-recs", "Recommendations"],
+            ["sec-pump", "Peristaltic Pump"],
+            ["sec-logs", "Sensor Data Logs"],
+          ],
+        },
+        {
+          tab: "maintenance",
+          subs: [
+            ["sec-sensor", "Sensor Check"],
+            ["sec-act", "Actuator Control"],
+          ],
+        },
+        {
+          tab: "sleep",
+          subs: [
+            ["sec-sleepctl", "Sleep Control"],
+            ["sec-snap", "Dashboard Snapshot"],
+            ["sec-sleeplog", "Sleep Log"],
+          ],
+        },
+      ];
+      const TAB_OF = {};
+      NAV.forEach((n) => n.subs.forEach(([id]) => (TAB_OF[id] = n.tab)));
+
+      /* =====================================================================
+   2. HARDWARE LINK: replace the body to talk to your controller/gateway
+   ===================================================================== */
+      async function sendCommand(cmd, payload = {}) {
+        await new Promise((r) => setTimeout(r, 150));
+        return { ok: true };
+      }
+
+      /* =====================================================================
+   3. STATE
+   ===================================================================== */
+      const S = {
+        tab: "auto",
+        sec: "sec-dash",
+        asleep: false,
+        changed: null,
+        level: 69, // simulated true tank level (demo only)
+        r: {}, // latest readings
+        log: [],
+        sleeps: [],
+        cmds: [],
+        lastLog: Date.now(),
+        tick: 0,
+        pump: { on: true, speed: PUMP_SPEED, running: false },
+      };
+
+      /* =====================================================================
+   4. HELPERS
+   ===================================================================== */
+      const $ = (s) => document.querySelector(s);
+      const $$ = (s) => document.querySelectorAll(s);
+      const clamp = (v) => Math.max(0, Math.min(100, v));
+      const fmtDate = (d) =>
+        d.toLocaleString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          second: DEMO ? "2-digit" : undefined,
+        });
+      const fmtClock = (d) => d.toLocaleTimeString("en-US");
+      const fmtDur = (ms) => {
+        const s = Math.round(ms / 1000);
+        return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m ${s % 60}s`;
+      };
+      const currentMode = () =>
+        S.asleep ? "sleep" : S.tab === "maintenance" ? "maint" : "auto";
+
+      /* Build one reading set from the (simulated) tank level */
+      function sample() {
+        const n = () => (Math.random() - 0.5) * 2,
+          l = S.level;
+        const r = {
+          w: Math.round(l * 10 + n() * 5),
+          d: Math.round(((100 - l) / 100) * 135 + n()),
+          c1: clamp(Math.round(l + n())),
+          c2: clamp(Math.round(l + n() * 1.5)),
+          f: l >= FLOAT_TRIP ? 1 : 0,
+        };
+        const levels = LEVEL_SENSORS.map((s) => s.pct(r[s.key]));
+        r.lv = clamp(
+          Math.round(levels.reduce((a, b) => a + b, 0) / levels.length),
+        );
+        r.ml = r.lv * 10;
+        r.spread = Math.max(...levels) - Math.min(...levels);
+        S.r = r;
+      }
+      const logEntry = () => ({ t: new Date(), ...S.r });
+
+      function seedDemoData() {
+        sample();
+        [
+          [10, 0, 700, 40, 71, 71],
+          [10, 4, 690, 41, 70, 70],
+          [10, 8, 680, 42, 69, 69],
+        ].forEach(([h, m, w, d, c1, c2]) =>
+          S.log.unshift({
+            t: new Date(2026, 10, 7, h, m),
+            w,
+            d,
+            c1,
+            c2,
+            f: 1,
+            lv: c1,
+            ml: c1 * 10,
+          }),
+        );
+        S.r = {
+          w: 680,
+          d: 42,
+          c1: 69,
+          c2: 69,
+          f: 1,
+          lv: 69,
+          ml: 690,
+          spread: 1,
+        };
+      }
+
+      /* =====================================================================
+   5. RENDER: one small function per area
+   ===================================================================== */
+      const kpiCard = (cls, icon, label, value, desc, bad) =>
+        `<div class="card"><div class="kpi-icon ${cls}">${icon}</div><div class="kpi-label">${label}</div><div class="kpi-value${bad ? " bad" : ""}">${value}</div><div class="kpi-description">${desc}</div></div>`;
+
+      function renderChrome(mode) {
+        $$(".tab").forEach((t) =>
+          t.classList.toggle("on", t.dataset.tab === S.tab),
+        );
+        $$(".nav-btn").forEach((b) => {
+          b.hidden = TAB_OF[b.dataset.go] !== S.tab;
+          b.classList.toggle("on", b.dataset.go === S.sec);
+        });
+        $$(".view").forEach((v) => v.classList.toggle("on", v.id === S.sec));
+
+        $("#banner").className = "banner " + mode;
+        $("#banner").innerHTML = {
+          auto: "● <strong>AUTO MODE:</strong> The system runs on its own and the dashboard updates as new data arrives.",
+          maint:
+            "⚙ <strong>MAINTENANCE MODE:</strong> Automatic operation is paused. Manual device testing is available.",
+          sleep:
+            "☾ <strong>SLEEP MODE:</strong> The microcontroller is asleep. No live data is coming in.",
+        }[mode];
+        $("#sideMode").textContent =
+          "● " + { auto: "AUTO", maint: "MAINTENANCE", sleep: "SLEEP" }[mode];
+        $("#sideState").textContent = S.asleep ? "Asleep" : "Awake";
+      }
+
+      function renderKpis(paused) {
+        const r = S.r;
+        const html =
+          SENSORS.map((s) =>
+            kpiCard(
+              s.color,
+              s.icon,
+              s.label,
+              s.fmt(r[s.key]),
+              s.desc,
+              s.bad && s.bad(r[s.key]),
+            ),
+          ).join("") +
+          kpiCard(
+            "purple",
+            "◉",
+            "COMBINED CAPACITY",
+            r.lv + "%",
+            "Average of level sensors",
+          );
+        $$(".kpi-slot").forEach((e) => {
+          e.innerHTML = html;
+          e.classList.toggle("stale", S.asleep);
+        });
+        $$(".live-tag").forEach((e) => {
+          e.textContent = S.asleep
+            ? "NO DATA · ASLEEP"
+            : paused
+              ? "PAUSED"
+              : "LIVE";
+          e.classList.toggle("paused", paused);
+        });
+      }
+
+      function renderTank() {
+        const r = S.r;
+        $("#liquid").style.height = r.lv + "%";
+        $("#fill").style.width = r.lv + "%";
+        $("#tankPct").textContent = $("#tankPct2").textContent = r.lv + "%";
+        $("#tankMl").textContent = r.ml + " mL";
+        const state =
+          r.lv < CRITICAL ? "CRITICAL" : r.lv < LOW ? "LOW" : "NORMAL";
+        $("#tankTag").textContent = state;
+        $("#tankTag").className = "tag" + (state === "NORMAL" ? "" : " warn");
+      }
+
+      function renderRecs() {
+        const r = S.r,
+          recs = []; // each item: [css class, title, text]
+
+        if (r.lv < CRITICAL)
+          recs.push([
+            "crit",
+            "Refill sanitizer now",
+            `Level is ${r.lv}%, below the ${CRITICAL}% critical threshold.`,
+          ]);
+        else if (r.lv < LOW)
+          recs.push([
+            "warn",
+            "Sanitizer running low",
+            `Level is ${r.lv}%, below the ${LOW}% threshold. Plan a refill.`,
+          ]);
+        else
+          recs.push([
+            "",
+            "Sanitizer level sufficient",
+            "The level is within the normal range. The dispenser is ready for use.",
+          ]);
+
+        if (!r.f && r.lv >= CRITICAL)
+          recs.push([
+            "crit",
+            "Float switch triggered",
+            "The float switch reports a low level. Check the tank and the other sensors.",
+          ]);
+        if (r.f && r.lv < FLOAT_TRIP - 10)
+          recs.push([
+            "warn",
+            "Float switch disagrees",
+            "The level sensors read low but the float switch still reports liquid. Check the float.",
+          ]);
+        if (r.spread > 15)
+          recs.push([
+            "warn",
+            "Sensors disagree",
+            `Level sensors differ by ${Math.round(r.spread)}%. Check sensor placement and calibration.`,
+          ]);
+        if (!S.pump.on)
+          recs.push([
+            "warn",
+            "Pump driver disabled",
+            "The dispenser will not dispense until the driver is enabled.",
+          ]);
+
+        $("#recs").innerHTML = recs
+          .map(
+            ([c, t, p]) =>
+              `<div class="rec ${c}"><div style="font-size:20px">${c ? "!" : "✓"}</div><div><b>${t}</b><p>${p}</p></div></div>`,
+          )
+          .join("");
+      }
+
+      function renderPump() {
+        const p = S.pump;
+        $("#pumpTag").textContent = !p.on
+          ? "DISABLED"
+          : p.running
+            ? "RUNNING"
+            : "STANDBY";
+        $("#pumpTitle").textContent = !p.on
+          ? "Driver Disabled"
+          : p.running
+            ? "Dispensing"
+            : "Ready for Dispensing";
+        $("#pumpSub").textContent = !p.on
+          ? "Enable the driver in Maintenance"
+          : p.running
+            ? "Test pulse in progress"
+            : "Waiting for dispense command";
+        $("#pumpDriver").textContent = p.on ? "Enabled" : "Disabled";
+        $("#pumpSpeed").textContent = p.speed + "%";
+      }
+
+      function renderLogs() {
+        const head =
+          "<thead><tr><th>Date & Time</th>" +
+          SENSORS.map((s) => `<th>${s.short}</th>`).join("") +
+          "<th>Combined Level</th><th>Volume</th></tr></thead>";
+        const rows = S.log
+          .slice(0, 15)
+          .map(
+            (e) =>
+              `<tr><td>${fmtDate(e.t)}</td>${SENSORS.map((s) => `<td>${s.fmt(e[s.key])}</td>`).join("")}<td>${e.lv}%</td><td>${e.ml} mL</td></tr>`,
+          )
+          .join("");
+        $$(".log-table").forEach(
+          (t) => (t.innerHTML = head + "<tbody>" + rows + "</tbody>"),
+        );
+        $("#logInfo").textContent =
+          `Saved every ${LOG_MS >= 60000 ? LOG_MS / 60000 + " minutes" : LOG_MS / 1000 + " seconds (demo)"}`;
+      }
+
+      function renderSleep() {
+        $("#sleepTag").textContent = S.asleep ? "ASLEEP" : "AWAKE";
+        $("#sleepTag").className = "tag" + (S.asleep ? " paused" : "");
+        $("#stStatus").textContent = S.asleep ? "Asleep" : "Awake";
+        $("#stChanged").textContent = S.changed
+          ? fmtDate(S.changed)
+          : "No change yet";
+        $("#stDur").textContent = S.asleep
+          ? fmtDur(Date.now() - S.changed)
+          : "Not sleeping";
+        $("#sleepBtn").disabled = S.asleep;
+        $("#wakeBtn").disabled = !S.asleep;
+        $("#sleepLog").innerHTML = S.sleeps.length
+          ? S.sleeps
+              .map(
+                (s) =>
+                  `<tr><td>${fmtDate(s.start)}</td><td>${s.end ? fmtDate(s.end) : "—"}</td><td>${fmtDur((s.end || Date.now()) - s.start)}</td><td>${s.end ? "Woke" : "Asleep"}</td></tr>`,
+              )
+              .join("")
+          : "<tr><td>No recorded sleep period</td><td>—</td><td>—</td><td>Waiting</td></tr>";
+      }
+
+      function renderMaintenance() {
+        $$("#tab-maintenance .btn, #tab-maintenance input").forEach(
+          (e) => (e.disabled = S.asleep),
+        );
+        $("#pulse").disabled = S.asleep || !S.pump.on || S.pump.running;
+        if (S.asleep)
+          $("#cmdlog").textContent =
+            "Controls are locked while the device sleeps. Send the wake command first.";
+      }
+
+      function render() {
+        const mode = currentMode(),
+          paused = mode !== "auto";
+        renderChrome(mode);
+        renderKpis(paused);
+        renderTank();
+        renderRecs();
+        renderPump();
+        renderLogs();
+        renderSleep();
+        renderMaintenance();
+      }
+
+      /* =====================================================================
+   6. ACTIONS: what the buttons do
+   ===================================================================== */
+      async function runCommand(name, payload) {
+        const res = await sendCommand(name, payload);
+        S.cmds.unshift(
+          `${fmtClock(new Date())}  ${name} ${JSON.stringify(payload)} → ${res.ok ? "ACK" : "FAILED"}`,
+        );
+        $("#cmdlog").innerHTML = S.cmds.slice(0, 5).join("<br>");
+        return res;
+      }
+
+      async function readSensor(key) {
+        const s = SENSORS.find((x) => x.key === key);
+        await runCommand("read_sensor", { sensor: key });
+        sample();
+        $("#v-" + key).textContent = s.fmt(S.r[key]);
+        $("#t-" + key).textContent = "Read at " + fmtClock(new Date());
+        render();
+      }
+
+      async function runTestPulse() {
+        S.pump.running = true;
+        render();
+        await runCommand("pump_pulse", { speed: S.pump.speed, ms: PULSE_MS });
+        setTimeout(() => {
+          S.pump.running = false;
+          render();
+        }, PULSE_MS);
+      }
+
+      async function goToSleep() {
+        await sendCommand("sleep");
+        S.asleep = true;
+        S.changed = new Date();
+        S.sleeps.unshift({ start: S.changed, end: null });
+        render();
+      }
+
+      async function wakeUp() {
+        await sendCommand("wake");
+        S.asleep = false;
+        S.changed = new Date();
+        S.sleeps[0].end = S.changed;
+        S.tab = "auto";
+        S.sec = "sec-dash";
+        S.lastLog = Date.now();
+        render();
+      }
+
+      function goTo(sectionId) {
+        S.sec = sectionId;
+        S.tab = TAB_OF[sectionId];
+        render();
+        window.scrollTo({ top: 0 });
+      }
+
+      /* =====================================================================
+   7. SETUP: build the parts that never change, then wire up events
+   ===================================================================== */
+      function buildStaticUi() {
+        $("#sideNav").innerHTML = NAV.flatMap((n) => n.subs)
+          .map(
+            ([id, label]) =>
+              `<button class="nav-btn" data-go="${id}">${label}</button>`,
+          )
+          .join("");
+        Object.keys(TAB_OF).forEach((id) =>
+          document.getElementById(id).classList.add("view"),
+        );
+        $("#sensorList").innerHTML = SENSORS.map(
+          (s) =>
+            `<div class="sensor-check"><strong>${s.name}<small id="t-${s.key}">Not read yet</small></strong><span id="v-${s.key}">—</span><button class="btn" data-read="${s.key}">Read</button></div>`,
+        ).join("");
+        $("#pulse").textContent = `Run test pulse (${PULSE_MS / 1000} s)`;
+      }
+
+      function bindEvents() {
+        $$(".nav-btn").forEach((b) => (b.onclick = () => goTo(b.dataset.go)));
+        $$(".tab").forEach(
+          (t) =>
+            (t.onclick = () =>
+              goTo(NAV.find((n) => n.tab === t.dataset.tab).subs[0][0])),
+        );
+        $$("[data-read]").forEach(
+          (b) => (b.onclick = () => readSensor(b.dataset.read)),
+        );
+        $("#readAll").onclick = async () => {
+          for (const s of SENSORS) await readSensor(s.key);
+        };
+        $("#pumpOn").onchange = (e) => {
+          S.pump.on = e.target.checked;
+          runCommand("pump_enable", { on: S.pump.on });
+          render();
+        };
+        $("#pulse").onclick = runTestPulse;
+        $("#sleepBtn").onclick = goToSleep;
+        $("#wakeBtn").onclick = wakeUp;
+      }
+
+      /* Runs every second. Only AUTO mode updates data. */
+      function tickLoop() {
+        if (currentMode() === "auto") {
+          if (++S.tick % 3 === 0) {
+            S.level -= Math.random() * 0.6;
+            if (S.level < 3) S.level = 100;
+            sample();
+          }
+          if (Date.now() - S.lastLog >= LOG_MS) {
+            S.log.unshift(logEntry());
+            S.lastLog = Date.now();
+          }
+        }
+        render();
+      }
+
+      seedDemoData();
+      buildStaticUi();
+      bindEvents();
+      render();
+      setInterval(tickLoop, 1000);
+    </script>
+  </body>
+</html>
